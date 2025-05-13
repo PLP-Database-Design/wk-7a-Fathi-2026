@@ -1,9 +1,7 @@
 Question 1: Achieving 1NF (First Normal Form) 🛠️
 To achieve First Normal Form (1NF), we need to split the Products column into individual rows, making sure each row represents a single product for an order.
 
-sql
-Copy
-Edit
+
 -- Achieving 1NF: Create a new table that splits the Products column into individual rows
 CREATE TABLE ProductDetail_1NF (
   OrderID INT,
