@@ -1,52 +1,53 @@
-Question 1: Achieving 1NF (First Normal Form) 🛠️
-To achieve First Normal Form (1NF), we need to split the Products column into individual rows, making sure each row represents a single product for an order.
+-- 1. SQL query to transform this table into 1NF
 
-
--- Achieving 1NF: Create a new table that splits the Products column into individual rows
+   -- Create a new table with atomic values
 CREATE TABLE ProductDetail_1NF (
-  OrderID INT,
-  CustomerName VARCHAR(255),
-  Product VARCHAR(255)
+    OrderID INT,
+    CustomerName VARCHAR(255),
+    Product VARCHAR(255),
+    PRIMARY KEY (OrderID, Product)
 );
 
--- Insert data from the original table into the new table by splitting the Products column
+-- Insert transformed data into the table
 INSERT INTO ProductDetail_1NF (OrderID, CustomerName, Product)
-SELECT OrderID, CustomerName, TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(Products, ',', n.n), ',', -1)) AS Product
-FROM ProductDetail
-JOIN (SELECT 1 AS n UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5) n
-  ON CHAR_LENGTH(Products) - CHAR_LENGTH(REPLACE(Products, ',', '')) >= n.n - 1;
+VALUES 
+    (101, 'John Doe', 'Laptop'),
+    (101, 'John Doe', 'Mouse'),
+    (102, 'Jane Smith', 'Tablet'),
+    (102, 'Jane Smith', 'Keyboard'),
+    (102, 'Jane Smith', 'Mouse'),
+    (103, 'Emily Clark', 'Phone');
 
-Question 2: Achieving 2NF (Second Normal Form) 🧩
-To achieve Second Normal Form (2NF), we need to remove partial dependencies by creating two tables:
 
-A Customers table to store the customer information.
 
-An OrderDetails table to store the product and quantity information for each order.
 
-sql
-Copy
-Edit
--- Create a new table for customers to remove partial dependency
-CREATE TABLE Customers (
-  OrderID INT PRIMARY KEY,
-  CustomerName VARCHAR(255)
+--2. SQL query to transform this table into 2NF
+   -- Step 1: Create Orders table
+CREATE TABLE Orders (
+    OrderID INT PRIMARY KEY,
+    CustomerName VARCHAR(100)
 );
 
--- Create a new table for order details to store products and quantities
-CREATE TABLE OrderDetails (
-  OrderID INT,
-  Product VARCHAR(255),
-  Quantity INT,
-  PRIMARY KEY (OrderID, Product),
-  FOREIGN KEY (OrderID) REFERENCES Customers(OrderID)
+-- Step 2: Insert unique OrderID-CustomerName pairs
+INSERT INTO Orders (OrderID, CustomerName) VALUES
+(101, 'John Doe'),
+(102, 'Jane Smith'),
+(103, 'Emily Clark');
+
+-- Step 3: Create OrderItems table
+CREATE TABLE OrderItems (
+    OrderID INT,
+    Product VARCHAR(100),
+    Quantity INT,
+    PRIMARY KEY (OrderID, Product),
+    FOREIGN KEY (OrderID) REFERENCES Orders(OrderID)
 );
 
--- Insert data into the Customers table
-INSERT INTO Customers (OrderID, CustomerName)
-SELECT DISTINCT OrderID, CustomerName
-FROM OrderDetails;
-
--- Insert data into the OrderDetails table
-INSERT INTO OrderDetails (OrderID, Product, Quantity)
-SELECT OrderID, Product, Quantity
-FROM OrderDetails;
+-- Step 4: Insert product and quantity data
+INSERT INTO OrderItems (OrderID, Product, Quantity) VALUES
+(101, 'Laptop', 2),
+(101, 'Mouse', 1),
+(102, 'Tablet', 3),
+(102, 'Keyboard', 1),
+(102, 'Mouse', 2),
+(103, 'Phone', 1);
